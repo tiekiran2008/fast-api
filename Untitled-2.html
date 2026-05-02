@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        input { 
+            padding: 10px; 
+            width: 70%; 
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            padding: 10px 20px; 
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        #response { 
+            background: #fff; 
+            padding: 15px; 
+            margin-top: 15px; 
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            min-height: 40px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>💬 Simple Chat</h2>
+        <input id="msg" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMsg()">
+        <button onclick="sendMsg()">Send</button>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        async function sendMsg() {
+            let message = document.getElementById("msg").value.trim();
+            
+            if (!message) {
+                alert("Please enter a message");
+                return;
+            }
+
+            document.getElementById("response").innerHTML = "<em>Sending...</em>";
+
+            try {
+                let res = await fetch("http://localhost:8000/chat", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({message})
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP Error: ${res.status}`);
+                }
+
+                let data = await res.json();
+                document.getElementById("response").innerHTML = 
+                    `<strong>You:</strong> ${data.user_message}<br><br><strong>Bot:</strong> ${data.bot_reply}`;
+                document.getElementById("msg").value = "";
+            } catch (error) {
+                document.getElementById("response").innerHTML = 
+                    `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
